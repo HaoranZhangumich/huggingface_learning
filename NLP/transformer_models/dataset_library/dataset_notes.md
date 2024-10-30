@@ -91,5 +91,63 @@ squad_it_dataset = load_dataset("json", data_files=data_files, field="data")
 ```
 This returns the same DatasetDict object obtained above
 
-## others 
+## Datasets offical document link
 Link: https://huggingface.co/docs/datasets/use_with_pytorch (datasets with pytorch)
+
+## slice and dice
+### separate doc with delimiter
+``` python
+from datasets import load_dataset
+
+data_files = {"train": "drugsComTrain_raw.tsv", "test": "drugsComTest_raw.tsv"}
+# \t is the tab character in Python
+drug_dataset = load_dataset("csv", data_files=data_files, delimiter="\t")
+```
+separate by \t
+
+### shuffle dataset and select
+``` python
+drug_sample = drug_dataset["train"].shuffle(seed=42).select(range(1000))
+# Peek at the first few examples
+drug_sample[:3]
+```
+```code
+{'Unnamed: 0': [87571, 178045, 80482],
+ 'drugName': ['Naproxen', 'Duloxetine', 'Mobic'],
+ 'condition': ['Gout, Acute', 'ibromyalgia', 'Inflammatory Conditions'],
+ 'review': ['"like the previous person mention, I&#039;m a strong believer of aleve, it works faster for my gout than the prescription meds I take. No more going to the doctor for refills.....Aleve works!"',
+  '"I have taken Cymbalta for about a year and a half for fibromyalgia pain. It is great\r\nas a pain reducer and an anti-depressant, however, the side effects outweighed \r\nany benefit I got from it. I had trouble with restlessness, being tired constantly,\r\ndizziness, dry mouth, numbness and tingling in my feet, and horrible sweating. I am\r\nbeing weaned off of it now. Went from 60 mg to 30mg and now to 15 mg. I will be\r\noff completely in about a week. The fibro pain is coming back, but I would rather deal with it than the side effects."',
+  '"I have been taking Mobic for over a year with no side effects other than an elevated blood pressure.  I had severe knee and ankle pain which completely went away after taking Mobic.  I attempted to stop the medication however pain returned after a few days."'],
+ 'rating': [9.0, 3.0, 10.0],
+ 'date': ['September 2, 2015', 'November 7, 2011', 'June 5, 2013'],
+ 'usefulCount': [36, 13, 128]}
+```
+### unique function to find the match unique rows (Dataset.unique())
+```python
+for split in drug_dataset.keys():
+    assert len(drug_dataset[split]) == len(drug_dataset[split].unique("Unnamed: 0"))
+```
+
+### rename column (DatasetDict.rename_column())
+drug_dataset = drug_dataset.rename_column(
+    original_column_name="Unnamed: 0", new_column_name="patient_id"
+)
+drug_dataset
+
+#### additional adding on lambda function in python
+```
+lambda <arguments> : <expression>
+```
+```python
+lambda x : x * x
+(lambda x: x * x)(3) # 9 is the output
+```
+### filter Dataset.filter()
+``` python
+drug_dataset = drug_dataset.filter(lambda x: x["review_length"] > 30)
+print(drug_dataset.num_rows)
+```
+
+### MAP Dataset.map()
+# TODDO
+https://huggingface.co/learn/nlp-course/en/chapter5/3?fw=pt
